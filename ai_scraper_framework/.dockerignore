@@ -1,0 +1,63 @@
+# Git specific
+.git
+.gitignore
+
+# Docker specific
+.dockerignore
+Dockerfile
+docker-compose.yml # Usually not needed in the image itself, but depends on workflow
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+VENV/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.project
+*.sublime-project
+*.sublime-workspace
+nbproject/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files (if not part of the app's runtime data to be copied)
+logs/
+*.log
+temp_playwright_screenshots/ # If these are truly temporary and not part of app data
+scraped_data_refined_dev/ # Example output directory, should not be in image
+scraped_data_refined_prod/ # Example output directory, should not be in image
+scraped_data/ # Old example output directory
+
+# Test files (usually not needed in production image, unless tests run in container)
+tests/
+pytest.ini
+.pytest_cache/
+coverage.xml
+.coverage
+
+# Model files (if they are large and managed separately, not part of app code)
+# models/cv_models/*.pt # Example, if .pt files are large and mounted later
+# models/nlp_models/* # Example, if spaCy models are large and mounted
+
+# Other
+*.bak
+*.tmp
