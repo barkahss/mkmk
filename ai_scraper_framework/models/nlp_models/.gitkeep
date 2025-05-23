@@ -1,0 +1,3 @@
+# This .gitkeep file ensures the nlp_models directory is tracked by Git,
+# even if it's empty. This is useful for placeholder directories
+# that are expected to be populated with model files later.

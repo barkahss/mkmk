@@ -1,0 +1,54 @@
+# TODO: Replace placeholder values with actual production configuration and manage secrets appropriately.
+database:
+  host: prod_db_host
+  port: 5432
+  database: ai_scraper_prod
+  username: prod_user
+  password: "YOUR_STRONG_PASSWORD_HERE" # Managed via secrets
+  pool_size: 20
+
+redis:
+  host: prod_redis_host
+  port: 6379
+  db: 0
+
+models: # This top-level 'models' key might be deprecated.
+  # cv_model_path: "/app/models/yolo_ecommerce_prod.pt" # Moved to components.vision
+  # nlp_model_path: "/app/models/spacy_product_model_prod" # To be replaced by components.extractor.spacy_model_name
+  confidence_threshold: 0.85 # General fallback
+  batch_size: 16             # General fallback
+
+logging:
+  level: WARNING # Changed for production
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s"
+  handlers:
+    console:
+      enabled: true # Console logging might still be useful in production via container logs
+    file:
+      enabled: true
+      path: "logs/ai_scraper_prod.log" # Different log file for production
+      max_bytes: 104857600 # 100MB for production
+      backup_count: 10
+
+components:
+  playwright_manager:
+    browser_type: "chromium" 
+    # headless: true 
+  file_storage:
+    base_path: "scraped_data_refined_prod" 
+  vision:
+    yolo_model_path: "/app/models/cv_models/yolov8_prod_model.pt" # Example production model path
+    # confidence_threshold: 0.3 # Vision-specific confidence
+  extractor:
+    spacy_model_name: "en_core_web_lg" # Larger English model for production, or a custom model path
+    # custom_ner_model_path: "/app/models/nlp_models/prod_custom_ner" # Example
+
+scraping:
+  max_concurrent_requests: 20
+  request_delay: 0.5 
+  timeout: 60
+  retry_attempts: 5
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"

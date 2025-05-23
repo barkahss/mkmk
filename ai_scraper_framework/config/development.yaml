@@ -1,0 +1,51 @@
+database:
+  host: localhost
+  port: 5432
+  database: ai_scraper_dev
+  username: dev_user
+  password: dev_password
+  pool_size: 5
+
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+
+models: # This top-level 'models' key might be deprecated in favor of component-specific model configs.
+  # cv_model_path: "./models/yolo_ecommerce_v1.pt" # Moved to components.vision
+  # nlp_model_path: "./models/spacy_product_model" # To be replaced by components.extractor.spacy_model_name
+  confidence_threshold: 0.7 # General fallback, can be overridden by component-specific settings
+  batch_size: 8             # General fallback
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s"
+  handlers:
+    console:
+      enabled: true
+    file:
+      enabled: true
+      path: "logs/ai_scraper_dev.log"
+      max_bytes: 10485760 # 10MB
+      backup_count: 5
+
+components:
+  playwright_manager:
+    browser_type: "chromium"
+  file_storage:
+    base_path: "scraped_data_refined_dev"
+  vision:
+    yolo_model_path: "models/cv_models/yolov8n.pt" # Path relative to project root
+    # confidence_threshold: 0.25 # Vision-specific confidence
+  extractor:
+    spacy_model_name: "en_core_web_sm" # Default small English model for spaCy
+    # custom_ner_model_path: "models/nlp_models/custom_ner_model" # Example for future
+
+scraping:
+  max_concurrent_requests: 5
+  request_delay: 2.0
+  timeout: 30 
+  retry_attempts: 3
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
