@@ -12,7 +12,7 @@ from fastapi.exceptions import RequestValidationError
 # from pydantic import ValidationError
 
 # Import project-specific modules
-from ai_scraper_framework.api.routes import scraper_routes
+from ai_scraper_framework.api.routes import scraper_routes, task_routes # Added task_routes
 from ai_scraper_framework.core.exceptions import AIScraperFrameworkError
 from ai_scraper_framework.core.logger import setup_logging, get_logger # Added get_logger for potential use
 from ai_scraper_framework.core.config import config_manager
@@ -44,6 +44,29 @@ app = FastAPI(
                 "Provides endpoints for initiating scraping jobs and potentially retrieving results.",
     version="0.1.0" # Consider making this configurable or auto-incremented.
 )
+
+# --- Database Initialization on Startup ---
+# This event handler will run when the FastAPI application starts up.
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Application startup: Initializing database...")
+    # It's crucial that config_manager is already loaded by this point.
+    # The global config_manager instance is created and loads config when core.config is imported.
+    # setup_logging also uses it.
+    try:
+        # Import DatabaseManager here to avoid potential issues if it's imported globally 
+        # before basic logging or config is fully set up, especially if it makes DB calls on init.
+        # However, for this project, DatabaseManager is designed to be safe on init.
+        from ai_scraper_framework.components.storage.db_manager import DatabaseManager
+        
+        db_manager = DatabaseManager(config=config_manager)
+        await db_manager.create_db_and_tables()
+        logger.info("Database tables checked/created successfully.")
+    except Exception as e_db_init:
+        logger.critical(f"CRITICAL: Database initialization failed during startup: {e_db_init}", exc_info=True)
+        # Depending on policy, you might want to exit the app if DB init fails.
+        # For now, it logs a critical error. The app might run but DB operations will fail.
+
 
 # --- Global Exception Handlers ---
 # These handlers catch specified exceptions that occur anywhere in the application
@@ -136,6 +159,11 @@ app.include_router(
     scraper_routes.router,
     prefix="/api/v1/scraping", # Specific prefix for scraping-related operations.
     tags=["Scraping Operations"]
+)
+app.include_router(
+    task_routes.router, # Use the router instance from task_routes.py
+    prefix="/api/v1/tasks",
+    tags=["Task Management"]
 )
 
 

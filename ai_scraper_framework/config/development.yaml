@@ -1,21 +1,22 @@
 database:
-  host: localhost
+  engine: postgresql+asyncpg # DSN scheme
+  host: db # Service name in docker-compose for development
   port: 5432
-  database: ai_scraper_dev
-  username: dev_user
-  password: dev_password
-  pool_size: 5
+  username: ai_scraper_user
+  password: ai_scraper_password # Ensure this matches docker-compose and local dev setup if any
+  dbname: ai_scraper_db
+  echo: true # Log SQL queries in dev
+  pool_size: 5 # Existing value
 
-redis:
+redis: # Placeholder, not used yet
   host: localhost
   port: 6379
   db: 0
 
-models: # This top-level 'models' key might be deprecated in favor of component-specific model configs.
-  # cv_model_path: "./models/yolo_ecommerce_v1.pt" # Moved to components.vision
-  # nlp_model_path: "./models/spacy_product_model" # To be replaced by components.extractor.spacy_model_name
-  confidence_threshold: 0.7 # General fallback, can be overridden by component-specific settings
-  batch_size: 8             # General fallback
+# Top-level 'models' key is being deprecated in favor of component-specific model configs.
+models: 
+  confidence_threshold: 0.7 
+  batch_size: 8            
 
 logging:
   level: INFO
@@ -32,16 +33,14 @@ logging:
 components:
   playwright_manager:
     browser_type: "chromium"
-  file_storage:
+  file_storage: # FileStorage might still be used for temporary files or non-DB storage
     base_path: "scraped_data_refined_dev"
   vision:
-    yolo_model_path: "models/cv_models/yolov8n.pt" # Path relative to project root
-    # confidence_threshold: 0.25 # Vision-specific confidence
+    yolo_model_path: "models/cv_models/yolov8n.pt" 
   extractor:
-    spacy_model_name: "en_core_web_sm" # Default small English model for spaCy
-    # custom_ner_model_path: "models/nlp_models/custom_ner_model" # Example for future
+    spacy_model_name: "en_core_web_sm"
 
-scraping:
+scraping: # General scraping parameters
   max_concurrent_requests: 5
   request_delay: 2.0
   timeout: 30 

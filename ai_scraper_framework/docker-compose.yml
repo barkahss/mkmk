@@ -3,27 +3,46 @@ version: '3.8'
 services:
   web_api:
     build:
-      context: . # Assumes docker-compose.yml is in the ai_scraper_framework directory
+      context: . 
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      # Mounts the current directory (ai_scraper_framework) on the host
-      # to /app in the container. This allows for live reloading.
       - ./:/app
     command: uvicorn ai_scraper_framework.api.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
-      - APP_ENV=development # For ConfigurationManager to load development.yaml
-      # PLAYWRIGHT_BROWSERS_PATH: /ms-playwright # Optional: if browsers are installed in a non-default path within the container
-      # (though `playwright install` should handle this by default in /root/.cache/ms-playwright or similar user-specific path)
-    # depends_on: # Example if we had a database service
-      # - db
-    # networks: # Example if we had custom networks
-      # - app_network
+      - APP_ENV=development 
+      # Database connection details are now sourced from development.yaml via ConfigurationManager
+      # PLAYWRIGHT_BROWSERS_PATH: /ms-playwright 
+    depends_on:
+      db:
+        condition: service_healthy # Wait for DB to be healthy
+    networks:
+      - app_network
 
-# networks: # Example
-  # app_network:
-    # driver: bridge
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: ai_scraper_user
+      POSTGRES_PASSWORD: ai_scraper_password
+      POSTGRES_DB: ai_scraper_db
+    ports:
+      # Expose PostgreSQL port to host for direct access if needed (e.g., DB client)
+      # For container-to-container communication, this is not strictly necessary if on same network.
+      - "5433:5432" # Mapping to 5433 on host to avoid conflict with local PG if any
+    healthcheck: # Basic healthcheck for PostgreSQL
+      test: ["CMD-SHELL", "pg_isready -U ai_scraper_user -d ai_scraper_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
 
-# volumes: # Example if we needed named volumes for persistent data
-  # db_data:
+volumes:
+  postgres_data: # Persists data across container restarts
+
+networks:
+  app_network:
+    driver: bridge
